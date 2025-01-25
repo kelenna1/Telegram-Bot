@@ -114,7 +114,7 @@ def run_daily_quote():
 
 # Scheduler setup
 scheduler = BackgroundScheduler()
-scheduler.add_job(run_daily_quote, 'cron', hour=22, minute=43)  # Adjust time as needed for testing
+scheduler.add_job(run_daily_quote, 'cron', hour=23, minute=0)  # Adjust time as needed for testing
 scheduler.start()
 
 # Add command handlers to the application
