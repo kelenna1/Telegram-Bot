@@ -1,10 +1,11 @@
 from dotenv import load_dotenv
-import os 
+import os
 import sqlite3
 import random
 from apscheduler.schedulers.background import BackgroundScheduler
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
+import asyncio
 
 load_dotenv()
 
@@ -16,7 +17,7 @@ if not BOT_TOKEN:
 # Initialize the bot application
 application = Application.builder().token(BOT_TOKEN).build()
 
-conn = sqlite3.connect("suscribers.db", check_same_thread=False)
+conn = sqlite3.connect("subscribers.db", check_same_thread=False)
 cursor = conn.cursor()
 
 cursor.execute("""
@@ -35,22 +36,29 @@ def remove_subscriber(chat_id):
     conn.commit()
 
 def get_all_subscriber():
-    cursor.execute( "SELECT chat_id FROM subscribers")
+    cursor.execute("SELECT chat_id FROM subscribers")
     return [row[0] for row in cursor.fetchall()]
 
-
-#command handlers
-async def start(update : Update, context: CallbackContext):
+# Command handlers
+async def start(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
-    add_subscriber(chat_id)
-    await update.message.reply_text("You've now been subscribed, love! You will receive your morning message at 7 AM every day. 😘")
+    subscribers = get_all_subscriber()
+    if chat_id in subscribers:
+        await update.message.reply_text(
+            "You're already a subscriber, wait and you'll recieve your morning message everyday at 7am"
+        )
+    else:
+        add_subscriber(chat_id)
+        await update.message.reply_text(
+            "You've now been subscribed, love! You will receive your morning message at 7 AM every day. 😘"
+        )
 
 async def stop(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     remove_subscriber(chat_id)
     await update.message.reply_text("Why are you leaving, hunn? 🤧🤧, \n You've been unsubscribed")
 
-#Where the list of quotes goes
+# Where the list of quotes goes
 quotes = [
     "Mma Goodmorning, every time I think of you, my heart whispers, 'She's the one.' You make my world perfect.",
     "Heyy babyy, Goodmorning. You're the melody that plays in my heart every moment, and I can’t wait to love you more today.",
@@ -85,21 +93,28 @@ quotes = [
 ]
 
 async def daily_quote():
-    subscriber = get_all_subscriber()
-    if not subscriber:
-        print("No Body to send quotes to ")
+    subscribers = get_all_subscriber()
+    if not subscribers:
+        print("No one to send quotes to.")
         return
-    
+
     quote = random.choice(quotes)
-    for chat_id in subscriber:
+    for chat_id in subscribers:
         try:
             await application.bot.send_message(chat_id=chat_id, text=quote)
         except Exception as e:
             print(f"Failed to send message to {chat_id}: {e}")
 
+# Wrapper function to run the coroutine in a new event loop
+def run_daily_quote():
+    loop = asyncio.new_event_loop()  # Create a new event loop
+    asyncio.set_event_loop(loop)    # Set it as the current event loop for this thread
+    loop.run_until_complete(daily_quote())  # Run the coroutine in this new loop
+    loop.close()  # 
+
 # Scheduler setup
 scheduler = BackgroundScheduler()
-scheduler.add_job(daily_quote, 'cron', hour=7, minute=0)  # Send at 7:00 AM daily
+scheduler.add_job(run_daily_quote, 'cron', hour=22, minute=43)  # Adjust time as needed for testing
 scheduler.start()
 
 # Add command handlers to the application
