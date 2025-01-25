@@ -52,8 +52,8 @@ async def stop(update: Update, context: CallbackContext):
 
 #Where the list of quotes goes
 quotes = [
-    "Mma Goodmorning, every time I think of you, my heart whispers, ‘She’s the one.’ You make my world perfect.",
-    "Heyy babyy, Goodmorning. You’re the melody that plays in my heart every moment, and I can’t wait to love you more today.",
+    "Mma Goodmorning, every time I think of you, my heart whispers, 'She's the one.' You make my world perfect.",
+    "Heyy babyy, Goodmorning. You're the melody that plays in my heart every moment, and I can’t wait to love you more today.",
     "Goodmorning baby, your smile is my sunshine, your love is my fuel, and your presence is my greatest blessing.",
     "Mma Goodmorning, waking up is magical because I get to spend another day loving you.",
     "Heyy babyy, Goodmorning. If I could, I’d wrap the warmth of my love around you every second of the day.",
